@@ -16,6 +16,10 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Pub Manager v1.0 backend is running!");
 });
 
+import authRoutes from "./modules/auth/routes/authRoutes";
+
+app.use("/auth", authRoutes);
+
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message });
