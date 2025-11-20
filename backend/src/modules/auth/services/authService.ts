@@ -1,50 +1,61 @@
+import { PrismaClient, Role } from "../../../generated/prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { User } from "../models/User";
 
-// Mock database temporaneo
-const users: User[] = [];
+const prisma = new PrismaClient();
 
-export const registerUser = async (username: string, email: string, password: string) => {
-  if (users.find(u => u.email === email)) {
-    throw new Error("Email already registered");
+const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_EXPIRES_IN = Number(process.env.JWT_EXPIRES_IN) || 86400; // default 1 giorno in secondi
+
+export class AuthService {
+  static async register(data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    role?: Role;
+  }) {
+    const { email, password, firstName, lastName, role } = data;
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) throw new Error("Email already registered");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        role: role || Role.USER,
+      },
+    });
+
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
+
+    return { user, token };
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  static async login(email: string, password: string) {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) throw new Error("Invalid credentials");
 
-  const newUser: User = {
-    id: users.length + 1,
-    username,
-    email,
-    password: hashedPassword,
-    role: "staff"
-  };
+    const isValid = await bcrypt.compare(password, user.password);
+    if (!isValid) throw new Error("Invalid credentials");
 
-  users.push(newUser);
-  return newUser;
-};
+    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    });
 
-export const loginUser = async (email: string, password: string) => {
-  const user = users.find(u => u.email === email);
-  if (!user) throw new Error("Invalid email or password");
+    return { user, token };
+  }
+}
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) throw new Error("Invalid email or password");
 
-  const secret: jwt.Secret = process.env.JWT_SECRET || "fallbacksecret";
 
-  // 🔹 expiresIn come numero di secondi, TypeScript-friendly
-  const expiresIn = process.env.JWT_EXPIRES_IN
-    ? parseInt(process.env.JWT_EXPIRES_IN, 10)
-    : 86400; // fallback 1 giorno
 
-  const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
-    secret,
-    { expiresIn } // ✅ ora TypeScript accetta senza errori
-  );
-
-  return { user, token };
-};
 
 
