@@ -1,13 +1,24 @@
-import { Router } from "express";
-import { register, login } from "../controllers/authController";
+import { Router, Request, Response, NextFunction } from "express";
+import { AuthController } from "../controllers/authController";
+import { registerSchema, loginSchema } from "../validators/authValidator";
 
 const router = Router();
 
-// POST /auth/register
-router.post("/register", register);
+// Middleware di validazione
+const validate = (schema: any) => (req: Request, res: Response, next: NextFunction) => {
+  try {
+    req.body = schema.parse(req.body);
+    next();
+  } catch (err: any) {
+    res.status(400).json({ message: err.errors || err.message });
+  }
+};
 
-// POST /auth/login
-router.post("/login", login);
+router.post("/register", validate(registerSchema), AuthController.register);
+router.post("/login", validate(loginSchema), AuthController.login);
 
 export default router;
+
+
+
 

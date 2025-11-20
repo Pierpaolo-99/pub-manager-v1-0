@@ -1,23 +1,23 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser } from "../services/authService";
-
-export const register = async (req: Request, res: Response) => {
-  try {
-    const { username, email, password } = req.body;
-    const newUser = await registerUser(username, email, password);
-    res.status(201).json({ user: newUser });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+import { AuthService } from "../services/authService";
+export class AuthController {
+  static async register(req: Request, res: Response) {
+    try {
+      const result = await AuthService.register(req.body);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
   }
-};
 
-export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    const result = await loginUser(email, password);
-    res.status(200).json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message });
+  static async login(req: Request, res: Response) {
+    try {
+      const result = await AuthService.login(req.body.email, req.body.password);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
   }
-};
+}
+
 
