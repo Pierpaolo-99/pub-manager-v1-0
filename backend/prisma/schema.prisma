@@ -31,3 +31,34 @@ enum Role {
   USER
 }
 
+// ===== INVENTORY MODELS =====
+
+model Ingredient {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  unit        String    // es: "kg", "l", "pz"
+  quantity    Float     @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  movements   Movement[]
+  
+  @@map("ingredients")
+}
+
+model Movement {
+  id            Int        @id @default(autoincrement())
+  ingredientId  Int
+  type          MovementType // IN = entrata, OUT = uscita
+  quantity      Float
+  createdAt     DateTime   @default(now())
+  note          String?     // campo opzionale
+  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@map("movements")
+}
+
+enum MovementType {
+  IN
+  OUT
+}

@@ -26,6 +26,8 @@ app.use("/auth", authRoutes);
 import userRoutes from "./modules/users/routes/usersRoutes";
 app.use("/users", userRoutes);
 
+import inventoryRoutes from "./modules/inventory/routes/inventoryRoutes";
+app.use("/inventory", inventoryRoutes);
 
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
