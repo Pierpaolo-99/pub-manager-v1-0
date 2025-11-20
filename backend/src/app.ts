@@ -23,6 +23,10 @@ app.get("/", (req: Request, res: Response) => {
 import authRoutes from "./modules/auth/routes/authRoutes";
 app.use("/auth", authRoutes);
 
+import userRoutes from "./modules/users/routes/usersRoutes";
+app.use("/users", userRoutes);
+
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
