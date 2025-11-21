@@ -101,7 +101,7 @@ model ProductIngredient {
 
 model Order {
   id        Int         @id @default(autoincrement())
-  tableNumber Int?
+  tableId   Int?
   customer  String?
   status    OrderStatus @default(PENDING)
   total     Float       @default(0)
@@ -109,6 +109,7 @@ model Order {
   updatedAt DateTime    @updatedAt
 
   items     OrderItem[]
+  table     Table?      @relation(fields: [tableId], references: [id])
 
   @@map("orders")
 }
@@ -131,4 +132,26 @@ enum OrderStatus {
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+model Table {
+  id        Int         @id @default(autoincrement())
+  number    Int         // Numero tavolo (unico)
+  seats     Int         // Numero posti
+  status    TableStatus @default(FREE)
+  note      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  orders    Order[]
+
+  @@unique([number])
+  @@map("tables")
+}
+
+enum TableStatus {
+  FREE
+  OCCUPIED
+  RESERVED
+  CLOSED
 }

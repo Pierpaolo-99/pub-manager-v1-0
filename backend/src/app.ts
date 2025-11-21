@@ -35,6 +35,9 @@ app.use("/products", productRoutes);
 import ordersRoutes from "./modules/orders/routes/ordersRoutes"
 app.use("/orders", ordersRoutes);
 
+import tablesRoutes from "./modules/tables/routes/tablesRoutes"
+app.use("/tables", tablesRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

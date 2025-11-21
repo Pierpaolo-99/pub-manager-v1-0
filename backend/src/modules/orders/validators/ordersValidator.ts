@@ -7,13 +7,13 @@ export const orderItemSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  tableNumber: z.number().int().positive().optional(),
+  tableId: z.number().int().positive().optional(),
   customer: z.string().min(1).optional(),
   items: z.array(orderItemSchema).min(1),
 });
 
 export const updateOrderSchema = z.object({
-  tableNumber: z.number().int().positive().optional(),
+  tableId: z.number().int().positive().optional(),
   customer: z.string().min(1).optional(),
   items: z.array(orderItemSchema).min(1).optional(),
 });
