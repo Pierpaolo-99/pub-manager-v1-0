@@ -34,15 +34,16 @@ enum Role {
 // ===== INVENTORY MODELS =====
 
 model Ingredient {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
-  unit        String    // es: "kg", "l", "pz"
-  quantity    Float     @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id          Int                 @id @default(autoincrement())
+  name        String
+  quantity    Float
+  unit        String
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   movements   Movement[]
-  
+  products    ProductIngredient[]  // <--- AGGIUNTO ORA
+
   @@map("ingredients")
 }
 
@@ -62,3 +63,34 @@ enum MovementType {
   IN
   OUT
 }
+
+// ===== PRODUCTS MODELS =====
+
+model Product {
+  id          Int                 @id @default(autoincrement())
+  name        String
+  price       Float
+  category    String
+  description String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // relazione con ingredienti
+  ingredients ProductIngredient[]
+  
+  @@map("products")
+}
+
+model ProductIngredient {
+  id           Int        @id @default(autoincrement())
+  productId    Int
+  ingredientId Int
+  quantity     Float      // quantità di ingrediente usata per preparare 1 prodotto
+
+  product      Product    @relation(fields: [productId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@unique([productId, ingredientId]) // ogni ingrediente può comparire solo una volta per prodotto
+  @@map("product_ingredients")
+}
+
