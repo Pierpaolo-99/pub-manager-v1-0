@@ -9,7 +9,7 @@ interface OrderItemInput {
 }
 
 interface CreateOrderInput {
-  tableNumber?: number;
+  tableId?: number;
   customer?: string;
   items: OrderItemInput[];
 }
@@ -26,10 +26,10 @@ export class OrderService {
     }
   // Creazione ordine
   static async createOrder(data: CreateOrderInput) {
-    const { tableNumber, customer, items } = data;
+    const { tableId, customer, items } = data;
 
-    if (!tableNumber && !customer) {
-      throw new Error("Deve esserci almeno tableNumber o customer");
+    if (!tableId && !customer) {
+      throw new Error("Deve esserci almeno tableId o customer");
     }
 
     // Calcola il totale ordine
@@ -40,7 +40,7 @@ export class OrderService {
       // 1. Crea l'ordine e gli order items
       const order = await tx.order.create({
         data: {
-          tableNumber: tableNumber ?? null,
+          tableId: tableId ?? null,
           customer: customer ?? null,
           total,
           items: {
@@ -112,7 +112,7 @@ export class OrderService {
       const updatedOrder = await prisma.order.update({
         where: { id },
         data: {
-          tableNumber: data.tableNumber ?? null,
+          tableId: data.tableId ?? null,
           customer: data.customer ?? null,
         },
         include: { items: true },
@@ -153,7 +153,7 @@ export class OrderService {
 
       // 3. Prepara i nuovi order items
       const updateData: any = {
-        tableNumber: data.tableNumber ?? null,
+        tableId: data.tableId ?? null,
         customer: data.customer ?? null,
         total,
         items: {
