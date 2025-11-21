@@ -5,7 +5,7 @@ Creare un gestionale professionale per Pub/Bar che includa:
 - Gestione tavoli
 - Gestione ordini (POS Interface)
 - Kitchen Display System (KDS)
-- Gestione prodotti e varianti
+- Gestione prodotti
 - Magazzino e ingredienti (Inventory Management)
 - Ricette (Recipe Management)
 - Gestione fornitori e acquisti (Supplier Management)
@@ -33,11 +33,11 @@ Creare un gestionale professionale per Pub/Bar che includa:
 1. Seguire la separazione chiara tra **logica di business** e **presentazione**.  
 2. Usare **async/await** con gestione errori centralizzata (middleware).  
 3. Tutti i moduli devono avere:  
-   - Model (Prisma o ORM equivalente)  
+   - Model (Prisma)  
    - Controller  
    - Service  
    - Route  
-   - Validazioni (Zod/Joi)  
+   - Validazioni (Zod)  
 4. Struttura frontend modulare con componenti riutilizzabili.  
 5. UI mobile-first e responsive, con attenzione a accessibilità.  
 6. Non committare mai file `.env` o segreti: usare `.env.example`.  

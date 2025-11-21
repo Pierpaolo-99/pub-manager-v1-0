@@ -78,6 +78,9 @@ model Product {
   // relazione con ingredienti
   ingredients ProductIngredient[]
   
+  // relazione con ordini
+  orderItems  OrderItem[]
+
   @@map("products")
 }
 
@@ -94,3 +97,38 @@ model ProductIngredient {
   @@map("product_ingredients")
 }
 
+// ===== ORDERS =====
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  tableNumber Int?
+  customer  String?
+  status    OrderStatus @default(PENDING)
+  total     Float       @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  items     OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
