@@ -134,6 +134,8 @@ enum OrderStatus {
   CANCELLED
 }
 
+// ===== TABLES =====
+
 model Table {
   id        Int         @id @default(autoincrement())
   number    Int         // Numero tavolo (unico)
@@ -154,4 +156,43 @@ enum TableStatus {
   OCCUPIED
   RESERVED
   CLOSED
+}
+
+// ===== SUPPLIERS =====
+
+model Supplier {
+  id         Int      @id @default(autoincrement())
+  name       String
+  vatNumber  String   // Partita IVA
+  address    String?
+  contact    String?
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([vatNumber])
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id         Int                  @id @default(autoincrement())
+  supplierId Int
+  orderDate  DateTime             @default(now())
+  status     PurchaseOrderStatus  @default(PENDING)
+  total      Float                @default(0)
+  note       String?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  supplier   Supplier             @relation(fields: [supplierId], references: [id])
+
+  @@map("purchase_orders")
+}
+
+enum PurchaseOrderStatus {
+  PENDING
+  RECEIVED
+  CANCELLED
 }

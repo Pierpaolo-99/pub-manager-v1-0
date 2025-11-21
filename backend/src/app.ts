@@ -38,6 +38,12 @@ app.use("/orders", ordersRoutes);
 import tablesRoutes from "./modules/tables/routes/tablesRoutes"
 app.use("/tables", tablesRoutes);
 
+import suppliersRoutes from "./modules/suppliers/routes/suppliersRoutes"
+app.use("/suppliers", suppliersRoutes);
+
+import purchaseOrdersRoutes from "./modules/suppliers/routes/purchaseOrdersRoutes"
+app.use("/purchaseOrders", purchaseOrdersRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
