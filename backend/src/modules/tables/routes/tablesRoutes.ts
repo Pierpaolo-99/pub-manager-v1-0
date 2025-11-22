@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { TablesController } from "../controllers/tablesController";
-import { createTableSchema, updateTableSchema } from "../validators/tablesValidator";
+import { createTableSchema, updateTableSchema, updateTableStatusSchema } from "../validators/tablesValidator";
 import { z } from "zod";
 
 function validateBody(schema: z.ZodSchema<any>) {
@@ -16,8 +16,15 @@ function validateBody(schema: z.ZodSchema<any>) {
 
 const router = Router();
 
+router.patch(
+  "/:id/status",
+  validateBody(updateTableStatusSchema),
+  TablesController.updateTableStatus
+);
 router.post("/", validateBody(createTableSchema), TablesController.createTable);
 router.get("/", TablesController.getAllTables);
+router.get("/stats", TablesController.getTablesStats);
+router.get("/locations", TablesController.getLocations);
 router.get("/:id", TablesController.getTableById);
 router.put("/:id", validateBody(updateTableSchema), TablesController.updateTable);
 router.delete("/:id", TablesController.deleteTable);
