@@ -44,6 +44,12 @@ app.use("/suppliers", suppliersRoutes);
 import purchaseOrdersRoutes from "./modules/suppliers/routes/purchaseOrdersRoutes"
 app.use("/purchaseOrders", purchaseOrdersRoutes);
 
+import recipesRoutes from "./modules/recipes/routes/recipesRoutes"
+app.use("/recipes", recipesRoutes);
+
+import recipeIngredients from "./modules/recipes/routes/recipeIngredientsRoutes"
+app.use("/recipe-ingredients", recipeIngredients);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
