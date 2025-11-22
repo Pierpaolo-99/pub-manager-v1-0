@@ -64,14 +64,12 @@ export class CategoriesService {
     const total = await prisma.category.count();
     const active = await prisma.category.count({ where: { active: true } });
     const inactive = await prisma.category.count({ where: { active: false } });
-    const productsWithCategory = await prisma.product.count({ where: { categoryId: { not: null } } });
-    const productsWithoutCategory = await prisma.product.count({ where: { categoryId: null } });
+    const productsWithCategory = await prisma.product.count();
     return {
       totalCategories: total,
       activeCategories: active,
       inactiveCategories: inactive,
-      totalProductsWithCategory: productsWithCategory,
-      productsWithoutCategory
+      totalProductsWithCategory: productsWithCategory
     };
   }
 }

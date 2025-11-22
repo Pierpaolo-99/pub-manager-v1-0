@@ -15,6 +15,8 @@ export const RecipesService = {
     return prisma.recipe.update({ where: { id }, data });
   },
   async delete(id: number) {
+    // Elimina prima i collegamenti con gli ingredienti
+    await prisma.recipeIngredient.deleteMany({ where: { recipeId: id } });
     return prisma.recipe.delete({ where: { id } });
   }
 };

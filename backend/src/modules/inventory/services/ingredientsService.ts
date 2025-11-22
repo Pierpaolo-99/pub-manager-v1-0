@@ -27,6 +27,8 @@ export class IngredientService {
 
   // Eliminazione ingrediente
   static async deleteIngredient(id: number) {
+    // Elimina prima i collegamenti con i prodotti
+    await prisma.productIngredient.deleteMany({ where: { ingredientId: id } });
     await prisma.ingredient.delete({ where: { id } });
     return { message: "Ingredient deleted successfully" };
   }
