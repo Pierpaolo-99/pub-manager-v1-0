@@ -20,6 +20,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  orders    Order[]
+
   @@map("users")
 }
 
@@ -108,38 +110,119 @@ model ProductIngredient {
 // ===== ORDERS =====
 
 model Order {
-  id        Int         @id @default(autoincrement())
-  tableId   Int?
-  customer  String?
-  status    OrderStatus @default(PENDING)
-  total     Float       @default(0)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id                 Int           @id @default(autoincrement())
+  tableId            Int?
+  customer           String?
+  status             OrderStatus   @default(PENDING)
+  total              Float         @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
 
-  items     OrderItem[]
-  table     Table?      @relation(fields: [tableId], references: [id])
+  items              OrderItem[]
+  table              Table?        @relation(fields: [tableId], references: [id])
+
+  // Campi aggiuntivi
+  userId             Int?
+  customerName       String?       @db.VarChar(200)
+  customerPhone      String?       @db.VarChar(20)
+  customerEmail      String?       @db.VarChar(100)
+  subtotal           Decimal       @db.Decimal(10,2) @default(0.00)
+  taxAmount          Decimal       @db.Decimal(10,2) @default(0.00)
+  discountAmount     Decimal       @db.Decimal(10,2) @default(0.00)
+  discountType       String?       @db.VarChar(20)
+  promotionId        Int?
+  paymentMethod      PaymentMethod @default(CASH)
+  changeGiven        Decimal?      @db.Decimal(10,2)
+  paymentStatus      PaymentStatus @default(PENDING)
+  notes              String?       @db.Text
+  kitchenNotes       String?       @db.Text
+  estimatedReadyTime DateTime?     @db.Timestamp(0)
+  servedAt           DateTime?     @db.Timestamp(0)
+  paidAt             DateTime?     @db.Timestamp(0)
+  heldAt             DateTime?     @db.Timestamp(0)
+  user               User?         @relation(fields: [userId], references: [id])
+  promotion          Promotion?    @relation(fields: [promotionId], references: [id])
 
   @@map("orders")
 }
 
-model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int
-  productId Int
-  quantity  Int
-  price     Float
 
-  order   Order   @relation(fields: [orderId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+model OrderItem {
+  id            Int              @id @default(autoincrement())
+  orderId       Int
+  productId     Int
+  quantity      Int              @default(1)
+  priceAtSale   Decimal          @db.Decimal(10,2)
+  subtotal      Decimal          @db.Decimal(10,2)
+  notes         String?          @db.Text
+  status        OrderItemStatus  @default(PENDING)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  order         Order            @relation(fields: [orderId], references: [id])
+  product       Product          @relation(fields: [productId], references: [id])
 
   @@map("order_items")
 }
 
 enum OrderStatus {
   PENDING
-  IN_PROGRESS
+  IN_PREPARAZIONE
+  PRONTO
+  SERVITO
+  PAGATO
+  ANNULLATO
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANCOMAT
+  APP
+}
+
+enum PaymentStatus {
+  PENDING
   COMPLETED
-  CANCELLED
+  FAILED
+}
+
+// ===== PROMOTIONS =====
+
+model Promotion {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(200)
+  description  String?  @db.Text
+  type         PromotionType
+  value        Decimal  @db.Decimal(10,2)
+  minAmount    Decimal? @db.Decimal(10,2) @default(0.00)
+  maxDiscount  Decimal? @db.Decimal(10,2)
+  startDate    DateTime
+  endDate      DateTime
+  startTime    DateTime?  @db.Time(0)
+  endTime      DateTime?  @db.Time(0)
+  daysOfWeek   Json?
+  maxUses      Int?
+  currentUses  Int?     @default(0)
+  active       Boolean  @default(true)
+  orders       Order[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("promotions")
+}
+
+enum OrderItemStatus {
+  PENDING
+  PREPARING
+  READY
+  SERVED
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  BUY_X_GET_Y
 }
 
 // ===== TABLES =====
@@ -148,8 +231,10 @@ model Table {
   id        Int         @id @default(autoincrement())
   number    Int         // Numero tavolo (unico)
   seats     Int         // Numero posti
+  location  String?      @db.VarChar(100)
   status    TableStatus @default(FREE)
   note      String?
+  active    Boolean     @default(true)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
@@ -164,6 +249,7 @@ enum TableStatus {
   OCCUPIED
   RESERVED
   CLOSED
+  CLEANING
 }
 
 // ===== SUPPLIERS =====
