@@ -10,7 +10,7 @@ type IngredientInput = {
 type ProductInput = {
     name: string;
     price: number;
-    category: string;
+    categoryId: number;
     description?: string;
     ingredients?: IngredientInput[];
 };
@@ -21,7 +21,7 @@ export class ProductService {
         const productData: any = {
             name: data.name,
             price: data.price,
-            category: data.category,
+            categoryId: data.categoryId,
         };
 
         if (data.description) productData.description = data.description;
@@ -37,7 +37,7 @@ export class ProductService {
 
         const product = await prisma.product.create({
             data: productData,
-            include: { ingredients: true },
+            include: { ingredients: true, category: true },
         });
 
         return product;
@@ -46,7 +46,7 @@ export class ProductService {
     // Recupero tutti i prodotti
     static async getAllProducts() {
         return prisma.product.findMany({
-            include: { ingredients: true },
+            include: { ingredients: true, category: true },
         });
     }
 
@@ -54,7 +54,7 @@ export class ProductService {
     static async getProductById(id: number) {
         const product = await prisma.product.findUnique({
             where: { id },
-            include: { ingredients: true },
+            include: { ingredients: true, category: true },
         });
         if (!product) throw new Error("Product not found");
         return product;
@@ -65,7 +65,7 @@ export class ProductService {
         const updateData: any = {
             name: data.name,
             price: data.price,
-            category: data.category,
+            categoryId: data.categoryId,
         };
 
         if (data.description !== undefined) updateData.description = data.description;
@@ -84,7 +84,7 @@ export class ProductService {
         const updatedProduct = await prisma.product.update({
             where: { id },
             data: updateData,
-            include: { ingredients: true },
+            include: { ingredients: true, category: true },
         });
 
         return updatedProduct;

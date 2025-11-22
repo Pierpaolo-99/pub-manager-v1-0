@@ -68,13 +68,12 @@ enum MovementType {
 // ===== PRODUCTS MODELS =====
 
 model Product {
-  id          Int                 @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   name        String
   price       Float
-  category    String
   description String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // relazione con ingredienti
   ingredients ProductIngredient[]
@@ -85,6 +84,10 @@ model Product {
 
   // relazione con ordini
   orderItems  OrderItem[]
+
+  // relazione con categoria
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id])
 
   @@map("products")
 }
@@ -202,7 +205,7 @@ enum PurchaseOrderStatus {
   CANCELLED
 }
 
-// ===== SUPPLIERS =====
+// ===== RECIPES =====
 
 model Recipe {
   id          Int      @id @default(autoincrement())
@@ -231,4 +234,22 @@ model RecipeIngredient {
 
   @@unique([recipeId, ingredientId])
   @@map("recipe_ingredients")
+}
+
+// ===== RECIPES =====
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  icon        String?      // es. emoji o nome icona
+  color       String?      // es. #3B82F6
+  sortOrder   Int     @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products    Product[]
+
+  @@map("categories")
 }
