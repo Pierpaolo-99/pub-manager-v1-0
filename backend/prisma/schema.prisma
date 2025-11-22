@@ -42,7 +42,8 @@ model Ingredient {
   updatedAt   DateTime            @updatedAt
 
   movements   Movement[]
-  products    ProductIngredient[]  // <--- AGGIUNTO ORA
+  products    ProductIngredient[]
+  recipeIngredients RecipeIngredient[]
 
   @@map("ingredients")
 }
@@ -77,7 +78,11 @@ model Product {
 
   // relazione con ingredienti
   ingredients ProductIngredient[]
-  
+
+  // relazione con ricetta
+  recipeId Int?
+  recipe   Recipe? @relation(fields: [recipeId], references: [id])
+
   // relazione con ordini
   orderItems  OrderItem[]
 
@@ -195,4 +200,35 @@ enum PurchaseOrderStatus {
   PENDING
   RECEIVED
   CANCELLED
+}
+
+// ===== SUPPLIERS =====
+
+model Recipe {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ingredients RecipeIngredient[]
+  products    Product[]
+
+  @@unique([name])
+  @@map("recipes")
+}
+
+model RecipeIngredient {
+  id           Int        @id @default(autoincrement())
+  recipeId     Int
+  ingredientId Int
+  quantity     Float
+  unit         String
+
+  recipe       Recipe     @relation(fields: [recipeId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@unique([recipeId, ingredientId])
+  @@map("recipe_ingredients")
 }
