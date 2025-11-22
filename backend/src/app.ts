@@ -50,6 +50,9 @@ app.use("/recipes", recipesRoutes);
 import recipeIngredients from "./modules/recipes/routes/recipeIngredientsRoutes"
 app.use("/recipe-ingredients", recipeIngredients);
 
+import categoriesRoutes from "./modules/categories/routes/categoriesRoutes"
+app.use("/categories", categoriesRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
