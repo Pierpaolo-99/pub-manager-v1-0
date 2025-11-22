@@ -68,26 +68,26 @@ enum MovementType {
 // ===== PRODUCTS MODELS =====
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  price       Float
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               Int       @id @default(autoincrement())
+  name             String    @db.VarChar(200)
+  description      String?   @db.Text
+  basePrice        Decimal   @db.Decimal(10,2) @default(0.00)
+  imageUrl         String?   @db.VarChar(500)
+  active           Boolean   @default(true)
+  featured         Boolean   @default(false)
+  sortOrder        Int?      @default(0)
+  preparationTime  Int?      @default(0)
+  calories         Int?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  // relazione con ingredienti
-  ingredients ProductIngredient[]
-
-  // relazione con ricetta
-  recipeId Int?
-  recipe   Recipe? @relation(fields: [recipeId], references: [id])
-
-  // relazione con ordini
-  orderItems  OrderItem[]
-
-  // relazione con categoria
-  categoryId  Int?
-  category    Category? @relation(fields: [categoryId], references: [id])
+  // ...relazioni esistenti...
+  ingredients      ProductIngredient[]
+  orderItems       OrderItem[]
+  recipeId         Int?
+  recipe           Recipe?   @relation(fields: [recipeId], references: [id])
+  categoryId       Int
+  category         Category  @relation(fields: [categoryId], references: [id])
 
   @@map("products")
 }

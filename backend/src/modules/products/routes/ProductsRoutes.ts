@@ -15,6 +15,10 @@ const validate = (schema: any) => (req: any, res: any, next: any) => {
 };
 
 // Rotte prodotti
+
+// Statistiche prodotti
+router.get("/stats", ProductController.getProductStats);
+
 router.post("/", validate(createProductSchema), ProductController.createProduct);
 router.get("/", ProductController.getAllProducts);
 router.get("/:id", ProductController.getProductById);

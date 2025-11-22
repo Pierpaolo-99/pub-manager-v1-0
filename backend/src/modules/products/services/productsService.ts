@@ -9,22 +9,56 @@ type IngredientInput = {
 
 type ProductInput = {
     name: string;
-    price: number;
+    basePrice: number;
     categoryId: number;
     description?: string;
+    imageUrl?: string;
+    active?: boolean;
+    featured?: boolean;
+    sortOrder?: number;
+    preparationTime?: number;
+    calories?: number;
     ingredients?: IngredientInput[];
 };
 
 export class ProductService {
+        // Statistiche prodotti
+        static async getProductStats() {
+            const [stats] = await prisma.$queryRawUnsafe<any[]>(`
+                SELECT 
+                    COUNT(*) as total_products,
+                    COUNT(CASE WHEN active = 1 THEN 1 END) as active_products,
+                    COUNT(CASE WHEN featured = 1 THEN 1 END) as featured_products,
+                    AVG(basePrice) as avg_price,
+                    MIN(basePrice) as min_price,
+                    MAX(basePrice) as max_price,
+                    AVG(preparationTime) as avg_prep_time,
+                    COUNT(DISTINCT categoryId) as categories_count
+                FROM products
+            `);
+            // Conversione BigInt in Number
+            Object.keys(stats).forEach(key => {
+                if (typeof stats[key] === 'bigint') {
+                    stats[key] = Number(stats[key]);
+                }
+            });
+            return stats;
+        }
     // Creazione prodotto
     static async createProduct(data: ProductInput) {
         const productData: any = {
             name: data.name,
-            price: data.price,
+            basePrice: data.basePrice,
             categoryId: data.categoryId,
         };
 
         if (data.description) productData.description = data.description;
+        if (data.imageUrl) productData.imageUrl = data.imageUrl;
+        if (data.active !== undefined) productData.active = data.active;
+        if (data.featured !== undefined) productData.featured = data.featured;
+        if (data.sortOrder !== undefined) productData.sortOrder = data.sortOrder;
+        if (data.preparationTime !== undefined) productData.preparationTime = data.preparationTime;
+        if (data.calories !== undefined) productData.calories = data.calories;
 
         if (data.ingredients && data.ingredients.length > 0) {
             productData.ingredients = {
@@ -43,10 +77,51 @@ export class ProductService {
         return product;
     }
 
-    // Recupero tutti i prodotti
-    static async getAllProducts() {
+    // Recupero tutti i prodotti con filtri, paginazione e ordinamento
+    static async getAllProducts(params: {
+        categoryId?: number;
+        active?: boolean | "all";
+        featured?: boolean | "all";
+        search?: string;
+        limit?: number;
+        offset?: number;
+        sort_by?: string;
+        sort_direction?: "ASC" | "DESC";
+    } = {}) {
+        const {
+            categoryId,
+            active,
+            featured,
+            search,
+            limit = 100,
+            offset = 0,
+            sort_by = "sortOrder",
+            sort_direction = "ASC"
+        } = params;
+
+        // Costruisci i filtri
+        const where: any = {};
+        if (categoryId) where.categoryId = categoryId;
+        if (active !== undefined && active !== "all") where.active = !!active;
+        if (featured !== undefined && featured !== "all") where.featured = !!featured;
+        if (search) {
+            where.OR = [
+                { name: { contains: search } },
+                { description: { contains: search } }
+            ];
+        }
+
+        // Validazione campi ordinamento
+        const validSortFields = ["name", "basePrice", "sortOrder", "createdAt", "preparationTime", "calories"];
+        const sortField = validSortFields.includes(sort_by || "") ? sort_by : "sortOrder";
+        const sortDir = sort_direction === "DESC" ? "desc" : "asc";
+
         return prisma.product.findMany({
+            where,
             include: { ingredients: true, category: true },
+            orderBy: { [sortField]: sortDir },
+            take: limit,
+            skip: offset,
         });
     }
 
@@ -62,13 +137,17 @@ export class ProductService {
 
     // Aggiornamento prodotto
     static async updateProduct(id: number, data: ProductInput) {
-        const updateData: any = {
-            name: data.name,
-            price: data.price,
-            categoryId: data.categoryId,
-        };
-
+        const updateData: any = {};
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.basePrice !== undefined) updateData.basePrice = data.basePrice;
+        if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
         if (data.description !== undefined) updateData.description = data.description;
+        if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+        if (data.active !== undefined) updateData.active = data.active;
+        if (data.featured !== undefined) updateData.featured = data.featured;
+        if (data.sortOrder !== undefined) updateData.sortOrder = data.sortOrder;
+        if (data.preparationTime !== undefined) updateData.preparationTime = data.preparationTime;
+        if (data.calories !== undefined) updateData.calories = data.calories;
 
         if (data.ingredients) {
             // Se arrivano ingredienti, eliminare quelli esistenti e creare i nuovi
