@@ -122,33 +122,57 @@ export class SuppliersService {
 
   // Recupera prodotti forniti da un supplier (da tabella stock)
   static async getSupplierProducts(supplierId: number) {
-    // Prendi nome supplier
+    // Recupera il supplier
     const supplier = await prisma.supplier.findUnique({ where: { id: supplierId } });
     if (!supplier) throw new Error("Fornitore non trovato");
-    // Cerca prodotti in stock associati
-    // NB: Adatta la query a seconda del tuo schema stock
-    // Se non hai il modello stock, commenta questa parte o implementa la query corretta
-    // const products = await prisma.stock.findMany({ ... });
-    // const totalProducts = products.length;
-    // const totalValue = products.reduce((sum: number, p: any) => sum + (Number(p.quantity) * Number(p.costPerUnit)), 0);
-    // const lowStock = products.filter((p: any) => Number(p.quantity) <= 5).length;
-    // return {
-    //   supplier: { id: supplierId, name: supplier.name },
-    //   products,
-    //   stats: {
-    //     totalProducts,
-    //     totalValue: Number(totalValue.toFixed(2)),
-    //     lowStockProducts: lowStock,
-    //   },
-    // };
+    // Recupera tutti gli ordini di acquisto del supplier con i rispettivi items e ingredienti
+    const purchaseOrders = await prisma.purchaseOrder.findMany({
+      where: { supplierId },
+      include: {
+        purchaseOrderItems: {
+          include: { ingredient: true }
+        }
+      }
+    });
+    // FlatMap degli items per ottenere i prodotti acquistati
+    const products = purchaseOrders.flatMap(order =>
+      order.purchaseOrderItems.map(item => ({
+        ingredientId: item.ingredientId,
+        name: item.ingredient?.name || "",
+        quantity: item.quantity,
+        unit: item.unit,
+        unitPrice: item.unitPrice,
+        totalPrice: item.totalPrice,
+        notes: item.notes
+      }))
+    );
+    // Statistiche
+    const totalProducts = products.length;
+    const totalValue = products.reduce((sum, p) => {
+      // Prisma Decimal: usa toNumber()
+      if (p.totalPrice && typeof p.totalPrice.toNumber === "function") {
+        return sum + p.totalPrice.toNumber();
+      }
+      return sum + (typeof p.totalPrice === "number" ? p.totalPrice : 0);
+    }, 0);
+    const lowStockProducts = products.filter(p => {
+      if (p.quantity && typeof p.quantity.toNumber === "function") {
+        return p.quantity.toNumber() <= 5;
+      }
+      // Se è Decimal ma non ha toNumber, prova a castare
+      if (typeof p.quantity === "object" && p.quantity !== null && "toString" in p.quantity) {
+        return Number(p.quantity.toString()) <= 5;
+      }
+      return Number(p.quantity) <= 5;
+    }).length;
     return {
       supplier: { id: supplierId, name: supplier.name },
-      products: [],
+      products,
       stats: {
-        totalProducts: 0,
-        totalValue: 0,
-        lowStockProducts: 0,
-      },
+        totalProducts,
+        totalValue,
+        lowStockProducts
+      }
     };
   }
 
@@ -202,10 +226,10 @@ export class SuppliersService {
   static async getSuppliersStats() {
     const stats = await prisma.supplier.aggregate({
       _count: { id: true },
-      _sum: {},
-      _avg: {},
-      _min: {},
-      _max: {},
+      _sum: { discountPercentage: true, minOrderAmount: true },
+      _avg: { discountPercentage: true, minOrderAmount: true },
+      _min: { discountPercentage: true, minOrderAmount: true },
+      _max: { discountPercentage: true, minOrderAmount: true },
     });
     // Statistiche custom
     const active = await prisma.supplier.count({ where: { active: true } });

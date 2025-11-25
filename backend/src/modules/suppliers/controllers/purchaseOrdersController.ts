@@ -13,8 +13,26 @@ export class PurchaseOrdersController {
 
   static async getAllPurchaseOrders(req: Request, res: Response) {
     try {
-      const orders = await PurchaseOrdersService.getAllPurchaseOrders();
-      res.json(orders);
+      // Filtri avanzati da query string
+      const filters: any = {};
+      if (req.query.status) filters.status = req.query.status as string;
+      if (req.query.supplierId) filters.supplierId = Number(req.query.supplierId);
+      if (req.query.search) filters.search = req.query.search as string;
+      if (req.query.fromDate) filters.fromDate = req.query.fromDate as string;
+      if (req.query.toDate) filters.toDate = req.query.toDate as string;
+      if (req.query.limit) filters.limit = Number(req.query.limit);
+      if (req.query.offset) filters.offset = Number(req.query.offset);
+      const result = await PurchaseOrdersService.getAllPurchaseOrders(filters);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+  // Endpoint statistiche ordini di acquisto
+  static async getPurchaseOrdersStats(req: Request, res: Response) {
+    try {
+      const stats = await PurchaseOrdersService.getPurchaseOrdersStats();
+      res.json({ stats });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

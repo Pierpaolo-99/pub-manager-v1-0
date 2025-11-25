@@ -16,6 +16,11 @@ function validateBody(schema: z.ZodSchema<any>) {
 
 const router = Router();
 
+
+// Rotte extra prima di /:id
+router.get("/stats", PurchaseOrdersController.getPurchaseOrdersStats);
+
+// CRUD classico
 router.post("/", validateBody(createPurchaseOrderSchema), PurchaseOrdersController.createPurchaseOrder);
 router.get("/", PurchaseOrdersController.getAllPurchaseOrders);
 router.get("/:id", PurchaseOrdersController.getPurchaseOrderById);
