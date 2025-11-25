@@ -22,6 +22,10 @@ router.get("/ingredients", IngredientController.getAllIngredients);
 router.get("/ingredients/:id", IngredientController.getIngredientById);
 router.put("/ingredients/:id", validate(updateIngredientSchema), IngredientController.updateIngredient);
 router.delete("/ingredients/:id", IngredientController.deleteIngredient);
+// Extra: categorie, storage types, fornitori
+router.get("/ingredients/categories", IngredientController.getIngredientCategories);
+router.get("/ingredients/storage-types", IngredientController.getStorageTypes);
+router.get("/ingredients/suppliers", IngredientController.getSuppliers);
 
 // Routes movimenti
 router.post("/movements", validate(createMovementSchema), MovementController.createMovement);
