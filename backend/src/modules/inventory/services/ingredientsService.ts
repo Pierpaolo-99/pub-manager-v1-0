@@ -35,7 +35,9 @@ export class IngredientService {
     if (category && category !== "all") where.category = category;
     if (supplier && supplier !== "all") where.supplier = supplier;
     if (storageType && storageType !== "all") where.storageType = storageType;
-    if (active !== undefined) where.active = active === true || active === "true";
+    if (active !== undefined && active !== "" && active !== null) {
+      where.active = active === true || active === "true";
+    }
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
