@@ -13,8 +13,20 @@ export class MovementController {
 
   static async getAllMovements(req: Request, res: Response) {
     try {
-      const movements = await MovementService.getAllMovements();
-      res.json(movements);
+      // Filtri avanzati da query string
+      let filters: any = {
+        type: typeof req.query.type === "string" ? req.query.type : "all",
+        referenceType: typeof req.query.referenceType === "string" ? req.query.referenceType : "all",
+        limit: req.query.limit ? Number(req.query.limit) : 50,
+        page: req.query.page ? Number(req.query.page) : 1
+      };
+      if (req.query.ingredientId) filters.ingredientId = Number(req.query.ingredientId);
+      if (typeof req.query.supplier === "string") filters.supplier = req.query.supplier;
+      if (typeof req.query.startDate === "string") filters.startDate = req.query.startDate;
+      if (typeof req.query.endDate === "string") filters.endDate = req.query.endDate;
+      if (typeof req.query.search === "string") filters.search = req.query.search;
+      const result = await MovementService.getAllMovements(filters);
+      res.json(result);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }

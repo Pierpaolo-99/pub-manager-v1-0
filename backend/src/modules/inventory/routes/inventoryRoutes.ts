@@ -19,6 +19,9 @@ const validate = (schema: any) => (req: any, res: any, next: any) => {
 // Routes ingredienti
 router.post("/ingredients", validate(createIngredientSchema), IngredientController.createIngredient);
 router.get("/ingredients", IngredientController.getAllIngredients);
+router.get("/ingredients/categories", IngredientController.getIngredientCategories);
+router.get("/ingredients/storage-types", IngredientController.getStorageTypes);
+router.get("/ingredients/suppliers", IngredientController.getSuppliers);
 router.get("/ingredients/:id", IngredientController.getIngredientById);
 router.put("/ingredients/:id", validate(updateIngredientSchema), IngredientController.updateIngredient);
 router.delete("/ingredients/:id", IngredientController.deleteIngredient);

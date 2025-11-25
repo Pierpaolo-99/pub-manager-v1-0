@@ -21,6 +21,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   orders    Order[]
+  movements Movement[]
 
   @@map("users")
 }
@@ -36,35 +37,91 @@ enum Role {
 // ===== INVENTORY MODELS =====
 
 model Ingredient {
-  id          Int                 @id @default(autoincrement())
-  name        String
-  quantity    Float
-  unit        String
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id              Int      @id @default(autoincrement())
+  name            String   @db.VarChar(200)
+  description     String?  @db.Text
+  category        IngredientCategory @default(other)
+  unit            String   @db.VarChar(20) @default("g")
+  density         Decimal? @db.Decimal(8,3) @default(1.000)
+  costPerUnit     Decimal? @db.Decimal(10,4) @default(0.0000)
+  supplier        String?  @db.VarChar(200)
+  supplierCode    String?  @db.VarChar(100)
+  barcode         String?  @db.VarChar(50)
+  shelfLifeDays   Int?     @default(30)
+  storageType     StorageType @default(ambient)
+  allergenInfo    Json?
+  nutritionalInfo Json?
+  active          Boolean  @default(true)
+  quantity        Float    @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  movements   Movement[]
-  products    ProductIngredient[]
+  movements       Movement[]
+  products        ProductIngredient[]
   recipeIngredients RecipeIngredient[]
 
   @@map("ingredients")
 }
 
 model Movement {
-  id            Int        @id @default(autoincrement())
-  ingredientId  Int
-  type          MovementType // IN = entrata, OUT = uscita
-  quantity      Float
-  createdAt     DateTime   @default(now())
-  note          String?     // campo opzionale
-  ingredient    Ingredient @relation(fields: [ingredientId], references: [id])
+  id              Int      @id @default(autoincrement())
+  ingredientId    Int
+  batchId         Int?
+  type            MovementType
+  quantity        Decimal  @db.Decimal(12,3)
+  unit            String   @db.VarChar(20)
+  costPerUnit     Decimal? @db.Decimal(10,4)
+  totalCost       Decimal? @db.Decimal(10,2)
+  reason          String?  @db.VarChar(200)
+  referenceType   MovementReferenceType @default(manual)
+  referenceId     Int?
+  locationFrom    String?  @db.VarChar(100)
+  locationTo      String?  @db.VarChar(100)
+  expiryDate      DateTime?
+  batchCode       String?  @db.VarChar(100)
+  supplier        String?  @db.VarChar(200)
+  invoiceNumber   String?  @db.VarChar(100)
+  notes           String?  @db.Text
+  userId          Int?
+  createdAt       DateTime @default(now())
+  ingredient      Ingredient @relation(fields: [ingredientId], references: [id])
+  user            User?      @relation(fields: [userId], references: [id])
 
   @@map("movements")
 }
 
 enum MovementType {
-  IN
-  OUT
+  purchase
+  sale
+  waste
+  adjustment
+  transfer
+  production
+}
+enum IngredientCategory {
+  beverage
+  meat
+  fish
+  vegetable
+  dairy
+  grain
+  spice
+  sauce
+  other
+}
+
+enum StorageType {
+  ambient
+  refrigerated
+  frozen
+}
+
+enum MovementReferenceType {
+  order
+  purchase
+  production
+  manual
+  waste
 }
 
 // ===== PRODUCTS MODELS =====
