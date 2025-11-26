@@ -9,30 +9,38 @@ const JWT_EXPIRES_IN = Number(process.env.JWT_EXPIRES_IN) || 86400; // default 1
 
 export class AuthService {
   static async register(data: {
+    username: string;
     email: string;
     password: string;
-    firstName: string;
-    lastName: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
     role?: Role;
+    active?: boolean;
   }) {
-    const { email, password, firstName, lastName, role } = data;
+    const { username, email, password, firstName, lastName, phone, role, active } = data;
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) throw new Error("Email already registered");
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail) throw new Error("Email already registered");
+    const existingUsername = await prisma.user.findUnique({ where: { username } });
+    if (existingUsername) throw new Error("Username already registered");
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const user = await prisma.user.create({
       data: {
+        username,
         email,
         password: hashedPassword,
-        firstName,
-        lastName,
-        role: role || Role.USER,
+        firstName: firstName ?? null,
+        lastName: lastName ?? null,
+        phone: phone ?? null,
+        role: role || Role.WAITER,
+        active: active !== undefined ? active : true
       },
     });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, role: user.role, username: user.username }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
@@ -46,7 +54,10 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) throw new Error("Invalid credentials");
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
+    // Aggiorna lastLogin
+    await prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } });
+
+    const token = jwt.sign({ userId: user.id, role: user.role, username: user.username }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
     });
 
