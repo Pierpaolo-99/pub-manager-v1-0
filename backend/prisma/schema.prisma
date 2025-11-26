@@ -80,6 +80,7 @@ model Ingredient {
   products        ProductIngredient[]
   recipeIngredients RecipeIngredient[]
   purchaseOrderItems PurchaseOrderItem[]
+  ingredientAllergens IngredientAllergen[]
 
   @@map("ingredients")
 }
@@ -164,6 +165,7 @@ model Product {
   // ...relazioni esistenti...
   ingredients      ProductIngredient[]
   orderItems       OrderItem[]
+  productAllergens ProductAllergen[]
   recipeId         Int?
   recipe           Recipe?   @relation("RecipeProducts", fields: [recipeId], references: [id])
   categoryId       Int
@@ -483,4 +485,44 @@ model Category {
   products    Product[]
 
   @@map("categories")
+}
+
+// ===== ALLERGENS =====
+
+model Allergen {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ingredients IngredientAllergen[]
+  products    ProductAllergen[]
+
+  @@map("allergens")
+}
+
+model IngredientAllergen {
+  id           Int         @id @default(autoincrement())
+  ingredientId Int
+  allergenId   Int
+
+  ingredient   Ingredient  @relation(fields: [ingredientId], references: [id])
+  allergen     Allergen    @relation(fields: [allergenId], references: [id])
+
+  @@unique([ingredientId, allergenId])
+  @@map("ingredient_allergens")
+}
+
+model ProductAllergen {
+  id         Int       @id @default(autoincrement())
+  productId  Int
+  allergenId Int
+
+  product    Product   @relation(fields: [productId], references: [id])
+  allergen   Allergen  @relation(fields: [allergenId], references: [id])
+
+  @@unique([productId, allergenId])
+  @@map("product_allergens")
 }

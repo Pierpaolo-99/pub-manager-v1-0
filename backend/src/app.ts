@@ -53,6 +53,9 @@ app.use("/recipe-ingredients", recipeIngredients);
 import categoriesRoutes from "./modules/categories/routes/categoriesRoutes"
 app.use("/categories", categoriesRoutes);
 
+import allergensRoutes from "./modules/allergens/routes/allergensRoutes"
+app.use("/allergens", allergensRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);

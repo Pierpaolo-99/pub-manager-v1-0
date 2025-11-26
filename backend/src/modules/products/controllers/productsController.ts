@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import { ProductService } from "../services/productsService";
 
 export class ProductController {
+      static async getProductAllergens(req: Request, res: Response) {
+        try {
+          const productId = Number(req.params.id);
+          const allergens = await ProductService.getAllergensForProduct(productId);
+          res.json({ success: true, allergens });
+        } catch (err: any) {
+          res.status(500).json({ success: false, error: err.message });
+        }
+      }
     static async getProductStats(req: Request, res: Response) {
       try {
         const stats = await ProductService.getProductStats();
