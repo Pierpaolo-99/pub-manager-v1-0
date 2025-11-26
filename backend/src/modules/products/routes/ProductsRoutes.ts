@@ -19,6 +19,8 @@ const validate = (schema: any) => (req: any, res: any, next: any) => {
 // Statistiche prodotti
 router.get("/stats", ProductController.getProductStats);
 
+router.get('/:id/allergens', ProductController.getProductAllergens);
+
 router.post("/", validate(createProductSchema), ProductController.createProduct);
 router.get("/", ProductController.getAllProducts);
 router.get("/:id", ProductController.getProductById);

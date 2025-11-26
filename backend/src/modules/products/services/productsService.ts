@@ -22,6 +22,46 @@ type ProductInput = {
 };
 
 export class ProductService {
+            // Recupera tutti gli allergeni (diretti e da ingredienti) di un prodotto
+            static async getAllergensForProduct(productId: number) {
+                // Allergeni associati direttamente al prodotto
+                const direct = await prisma.productAllergen.findMany({
+                    where: { productId },
+                    include: { allergen: true }
+                });
+
+                // Allergeni associati agli ingredienti del prodotto
+                const ingredientAllergens = await prisma.productIngredient.findMany({
+                    where: { productId },
+                    include: {
+                        ingredient: {
+                            include: {
+                                ingredientAllergens: {
+                                    include: { allergen: true }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Estraggo tutti gli allergeni dagli ingredienti
+                const allergensFromIngredients = ingredientAllergens
+                    .flatMap(pi => pi.ingredient.ingredientAllergens.map(ia => ia.allergen));
+
+                // Estraggo tutti gli allergeni diretti
+                const directAllergens = direct.map(pa => pa.allergen);
+
+                // Unisco e rimuovo duplicati (per id)
+                const allAllergens = [...directAllergens, ...allergensFromIngredients];
+                const uniqueAllergens = Object.values(
+                    allAllergens.reduce((acc, allergen) => {
+                        acc[allergen.id] = allergen;
+                        return acc;
+                    }, {} as Record<number, typeof allAllergens[0]>)
+                );
+
+                return uniqueAllergens;
+            }
         // Statistiche prodotti
         static async getProductStats() {
             const [stats] = await prisma.$queryRawUnsafe<any[]>(`
