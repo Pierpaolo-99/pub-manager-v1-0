@@ -13,7 +13,9 @@ function validateRecipe(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
-router.get('/', RecipesController.getAll);
+router.get('/available-products', RecipesController.getAvailableProducts);
+router.get('/', RecipesController.getAll); // supporta query params per filtri
+router.get('/stats', RecipesController.getStats);
 router.get('/:id', RecipesController.getById);
 router.post('/', validateRecipe, RecipesController.create);
 router.put('/:id', validateRecipe, RecipesController.update);
