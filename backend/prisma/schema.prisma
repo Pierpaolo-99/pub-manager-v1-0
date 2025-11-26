@@ -12,26 +12,46 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  username  String   @unique
   email     String   @unique
   password  String
-  firstName String
-  lastName  String
-  role      Role     @default(USER)
+  firstName String?
+  lastName  String?
+  phone     String?
+  role      Role     @default(WAITER)
+  active    Boolean  @default(true)
+  lastLogin DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   orders    Order[]
   movements Movement[]
+  sessions  UserSession[]
 
   @@map("users")
 }
 
 enum Role {
   ADMIN
-  MANAGER
   WAITER
+  KITCHEN
+  CASHIER
+  MANAGER
   CHEF
   USER
+}
+
+// ===== USER SESSIONS =====
+
+model UserSession {
+  id         String   @id @default(uuid())
+  userId     Int
+  expiresAt  DateTime
+  data       Json?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("user_sessions")
 }
 
 // ===== INVENTORY MODELS =====
