@@ -166,6 +166,7 @@ model Product {
   ingredients      ProductIngredient[]
   orderItems       OrderItem[]
   productAllergens ProductAllergen[]
+  promotionProducts PromotionProduct[]
   recipeId         Int?
   recipe           Recipe?   @relation("RecipeProducts", fields: [recipeId], references: [id])
   categoryId       Int
@@ -286,8 +287,34 @@ model Promotion {
   orders       Order[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  products     PromotionProduct[]
+  categories   PromotionCategory[]
 
   @@map("promotions")
+}
+
+model PromotionProduct {
+  id           Int        @id @default(autoincrement())
+  promotionId  Int
+  productId    Int
+
+  promotion    Promotion  @relation(fields: [promotionId], references: [id])
+  product      Product    @relation(fields: [productId], references: [id])
+
+  @@unique([promotionId, productId])
+  @@map("promotion_products")
+}
+
+model PromotionCategory {
+  id           Int        @id @default(autoincrement())
+  promotionId  Int
+  categoryId   Int
+
+  promotion    Promotion  @relation(fields: [promotionId], references: [id])
+  category     Category   @relation(fields: [categoryId], references: [id])
+
+  @@unique([promotionId, categoryId])
+  @@map("promotion_categories")
 }
 
 enum OrderItemStatus {
@@ -483,6 +510,7 @@ model Category {
   updatedAt   DateTime @updatedAt
 
   products    Product[]
+  promotionCategories PromotionCategory[]
 
   @@map("categories")
 }

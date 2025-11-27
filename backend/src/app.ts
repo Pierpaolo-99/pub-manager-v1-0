@@ -56,6 +56,9 @@ app.use("/categories", categoriesRoutes);
 import allergensRoutes from "./modules/allergens/routes/allergensRoutes"
 app.use("/allergens", allergensRoutes);
 
+import promotionsRoutes from "./modules/promotions/routes/promotionsRoutes"
+app.use("/promotions", promotionsRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
