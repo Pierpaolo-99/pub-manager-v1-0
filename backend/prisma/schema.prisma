@@ -31,6 +31,7 @@ model User {
   cashMovements CashMovement[]
   openedShifts CashShift[] @relation("OpenedBy")
   closedShifts CashShift[] @relation("ClosedBy")
+  reportsRequested Report[] @relation("UserRequestedReports")
 
   @@map("users")
 }
@@ -609,10 +610,43 @@ model FinancialReport {
   @@map("financial_reports")
 }
 
+
+// ===== REPORTS MODULE =====
+
+model Report {
+  id            Int          @id @default(autoincrement())
+  type          ReportType
+  name          String       @db.VarChar(200)
+  description   String?      @db.Text
+  period        String
+  startDate     DateTime
+  endDate       DateTime
+  generatedAt   DateTime     @default(now())
+  requestedById Int?
+  status        ReportStatus @default(PENDING)
+  format        ReportFormat @default(PDF)
+  data          Json
+  requestedBy   User?   @relation("UserRequestedReports", fields: [requestedById], references: [id])
+  @@map("reports")
+}
+
 enum ReportType {
-  X
-  Z
-  SUMMARY
-  DETAILED
-  EXPORT
+  FINANCIAL
+  SALES
+  INVENTORY
+  PERFORMANCE
+  CUSTOM
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATED
+  FAILED
+}
+
+enum ReportFormat {
+  PDF
+  CSV
+  EXCEL
+  JSON
 }

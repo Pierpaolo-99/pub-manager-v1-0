@@ -62,6 +62,9 @@ app.use("/promotions", promotionsRoutes);
 import financialRoutes from "./modules/financials/routes/financialsRoutes"
 app.use("/financials", financialRoutes);
 
+import reportsRoutes from "./modules/reports/routes/reportsRoutes";
+app.use("/reports", reportsRoutes);
+
 // 🔹 Middleware gestione errori
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.stack);
