@@ -32,6 +32,7 @@ model User {
   openedShifts CashShift[] @relation("OpenedBy")
   closedShifts CashShift[] @relation("ClosedBy")
   reportsRequested Report[] @relation("UserRequestedReports")
+  analyticsDashboardsCreated AnalyticsDashboard[] @relation("UserCreatedDashboards")
 
   @@map("users")
 }
@@ -650,3 +651,80 @@ enum ReportFormat {
   EXCEL
   JSON
 }
+
+  // ===== ANALYTICS =====
+
+  model AnalyticsDashboard {
+    id          Int      @id @default(autoincrement())
+    name        String   @db.VarChar(200)
+    description String?  @db.Text
+    config      Json     // layout, filtri, widget, ecc.
+    createdById Int?
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    createdBy   User?    @relation("UserCreatedDashboards", fields: [createdById], references: [id])
+    kpis        AnalyticsKPI[]
+    breakdowns  AnalyticsBreakdown[]
+
+    @@map("analytics_dashboards")
+  }
+
+  model AnalyticsKPI {
+    id            Int      @id @default(autoincrement())
+    dashboardId   Int
+    type          KPIType
+    name          String   @db.VarChar(200)
+    value         Decimal  @db.Decimal(16,4)
+    period        String
+    startDate     DateTime
+    endDate       DateTime
+    breakdown     Json?    // breakdown associato (es. per categoria/prodotto)
+    notes         String?  @db.Text
+    filters       Json?    // filtri applicati (es. status, periodo)
+    createdAt     DateTime @default(now())
+
+    dashboard     AnalyticsDashboard @relation(fields: [dashboardId], references: [id])
+
+    @@map("analytics_kpis")
+  }
+
+  model AnalyticsBreakdown {
+    id            Int      @id @default(autoincrement())
+    dashboardId   Int
+    type          BreakdownType
+    name          String   @db.VarChar(200)
+    data          Json     // breakdown aggregato (es. vendite per categoria)
+    groupBy       String?  // es. "day", "product", "category"
+    period        String
+    startDate     DateTime
+    endDate       DateTime
+    filters       Json?    // filtri applicati
+    createdAt     DateTime @default(now())
+
+    dashboard     AnalyticsDashboard @relation(fields: [dashboardId], references: [id])
+
+    @@map("analytics_breakdowns")
+  }
+
+  enum KPIType {
+    SALES
+    MARGIN
+    PROFIT
+    COST
+    INVENTORY
+    USER
+    PERFORMANCE
+    CUSTOM
+  }
+
+  enum BreakdownType {
+    CATEGORY
+    PRODUCT
+    SUPPLIER
+    USER
+    DAY
+    WEEK
+    MONTH
+    CUSTOM
+  }
