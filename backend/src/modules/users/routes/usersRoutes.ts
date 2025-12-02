@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { UserController } from "../controllers/usersController";
 import { userSchema } from "../validators/usersValidators";
+import { authorizeRoles } from '../../../middlewares/authorizeRoles';
+import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
 
@@ -16,17 +18,43 @@ const validate = (schema: any) => (req: any, res: any, next: any) => {
 
 // Rotte utenti
 // Statistiche utenti
-router.get("/stats", UserController.getStats);
+router.get(
+  "/stats",
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  UserController.getStats
+);
 // Crea utente
-router.post("/", validate(userSchema), UserController.createUser);
+router.post(
+  '/',
+  authorizeRoles(Role.ADMIN),
+  validate(userSchema),
+  UserController.createUser
+);
 // Lista utenti con filtri/paginazione
-router.get("/", UserController.getAllUsers);
+router.get(
+  '/',
+  authorizeRoles(Role.ADMIN),
+  UserController.getAllUsers
+);
 // Utente per ID
-router.get("/:id", UserController.getUserById);
+router.get(
+  '/:id',
+  authorizeRoles(Role.ADMIN),
+  UserController.getUserById
+);
 // Aggiorna utente
-router.put("/:id", validate(userSchema), UserController.updateUser);
+router.put(
+  '/:id',
+  authorizeRoles(Role.ADMIN),
+  validate(userSchema),
+  UserController.updateUser
+);
 // Elimina utente
-router.delete("/:id", UserController.deleteUser);
+router.delete(
+  '/:id',
+  authorizeRoles(Role.ADMIN),
+  UserController.deleteUser
+);
 
 // Endpoint extra/statistiche (da aggiungere)
 

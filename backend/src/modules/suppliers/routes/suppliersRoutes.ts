@@ -24,10 +24,27 @@ router.get("/stats", SuppliersController.getSuppliersStats);
 router.get("/:id/products", SuppliersController.getSupplierProducts);
 
 // CRUD classico
-router.post("/", validateBody(createSupplierSchema), SuppliersController.createSupplier);
+import { authorizeRoles } from '../../../middlewares/authorizeRoles';
+import { Role } from '../../../generated/prisma/enums';
+// ...existing code...
+router.post(
+  '/',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateBody(createSupplierSchema),
+  SuppliersController.createSupplier
+);
 router.get("/", SuppliersController.getAllSuppliers);
 router.get("/:id", SuppliersController.getSupplierById);
-router.put("/:id", validateBody(updateSupplierSchema), SuppliersController.updateSupplier);
-router.delete("/:id", SuppliersController.deleteSupplier);
+router.put(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateBody(updateSupplierSchema),
+  SuppliersController.updateSupplier
+);
+router.delete(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  SuppliersController.deleteSupplier
+);
 
 export default router;

@@ -21,10 +21,27 @@ const router = Router();
 router.get("/stats", PurchaseOrdersController.getPurchaseOrdersStats);
 
 // CRUD classico
-router.post("/", validateBody(createPurchaseOrderSchema), PurchaseOrdersController.createPurchaseOrder);
+import { authorizeRoles } from '../../../middlewares/authorizeRoles';
+import { Role } from '../../../generated/prisma/enums';
+
+router.post(
+  '/',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateBody(createPurchaseOrderSchema),
+  PurchaseOrdersController.createPurchaseOrder
+);
 router.get("/", PurchaseOrdersController.getAllPurchaseOrders);
 router.get("/:id", PurchaseOrdersController.getPurchaseOrderById);
-router.put("/:id", validateBody(updatePurchaseOrderSchema), PurchaseOrdersController.updatePurchaseOrder);
-router.delete("/:id", PurchaseOrdersController.deletePurchaseOrder);
+router.put(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateBody(updatePurchaseOrderSchema),
+  PurchaseOrdersController.updatePurchaseOrder
+);
+router.delete(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  PurchaseOrdersController.deletePurchaseOrder
+);
 
 export default router;

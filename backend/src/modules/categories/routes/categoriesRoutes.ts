@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { CategoriesController } from '../controllers/categoriesController';
 import { categorySchema } from '../validators/categoriesValidator';
+import { authorizeRoles } from '../../../middlewares/authorizeRoles';
+import { Role } from '../../../generated/prisma/enums';
 
 const router = Router();
 
@@ -18,8 +20,22 @@ router.get('/', CategoriesController.getAll);
 router.get('/active', CategoriesController.getActive);
 router.get('/stats', CategoriesController.getStats);
 router.get('/:id', CategoriesController.getById);
-router.post('/', validateCategory, CategoriesController.create);
-router.put('/:id', validateCategory, CategoriesController.update);
-router.delete('/:id', CategoriesController.delete);
+router.post(
+  '/',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateCategory,
+  CategoriesController.create
+);
+router.put(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  validateCategory,
+  CategoriesController.update
+);
+router.delete(
+  '/:id',
+  authorizeRoles(Role.ADMIN, Role.MANAGER),
+  CategoriesController.delete
+);
 
 export default router;
