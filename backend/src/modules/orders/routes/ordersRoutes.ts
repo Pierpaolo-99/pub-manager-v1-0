@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { authorizeRoles } from "../../../middlewares/authorizeRoles";
+import { Role } from "../../../generated/prisma/enums";
 
 import { OrdersController } from "../controllers/ordersController";
 import { createOrderSchema, updateOrderSchema, updateOrderStatusSchema, checkoutOrderSchema, applyDiscountSchema } from "../validators/ordersValidator";
@@ -21,7 +23,12 @@ function validateBody(schema: z.ZodSchema<any>) {
 const router = Router();
 
 // Crea un nuovo ordine
-router.post("/", validateBody(createOrderSchema), OrdersController.createOrder);
+router.post(
+	"/",
+	authorizeRoles(Role.WAITER, Role.CASHIER, Role.MANAGER),
+	validateBody(createOrderSchema),
+	OrdersController.createOrder
+);
 
 // Recupera tutti gli ordini
 router.get("/", OrdersController.getAllOrders);
@@ -36,25 +43,56 @@ router.get("/held", OrdersController.listHeldOrders);
 router.get("/:id", OrdersController.getOrderById);
 
 // Checkout ordine
-router.post("/:id/checkout", validateBody(checkoutOrderSchema), OrdersController.checkoutOrder);
+router.post(
+	"/:id/checkout",
+	authorizeRoles(Role.WAITER, Role.CASHIER, Role.MANAGER),
+	validateBody(checkoutOrderSchema),
+	OrdersController.checkoutOrder
+);
 
 // Rimborso ordine
-router.post("/:id/refund", OrdersController.refundOrder);
+router.post(
+	"/:id/refund",
+	authorizeRoles(Role.MANAGER, Role.CASHIER),
+	OrdersController.refundOrder
+);
 
 // Sospendi ordine
-router.post("/:id/hold", OrdersController.holdOrder);
+router.post(
+	"/:id/hold",
+	authorizeRoles(Role.WAITER, Role.MANAGER),
+	OrdersController.holdOrder
+);
 
 // Richiama ordine sospeso
-router.post("/:id/recall", OrdersController.recallOrder);
+router.post(
+	"/:id/recall",
+	authorizeRoles(Role.WAITER, Role.MANAGER),
+	OrdersController.recallOrder
+);
 
 // Applica sconto
-router.post("/:id/discount", validateBody(applyDiscountSchema), OrdersController.applyDiscount);
+router.post(
+	"/:id/discount",
+	authorizeRoles(Role.MANAGER, Role.CASHIER),
+	validateBody(applyDiscountSchema),
+	OrdersController.applyDiscount
+);
 
 // Aggiorna un ordine
-router.put("/:id", validateBody(updateOrderSchema), OrdersController.updateOrder);
+router.put(
+	"/:id",
+	authorizeRoles(Role.WAITER, Role.CASHIER, Role.MANAGER),
+	validateBody(updateOrderSchema),
+	OrdersController.updateOrder
+);
 
 // Cancella un ordine
-router.delete("/:id", OrdersController.deleteOrder);
+router.delete(
+	"/:id",
+	authorizeRoles(Role.MANAGER, Role.CASHIER),
+	OrdersController.deleteOrder
+);
 
 // Aggiorna lo status di un ordine
 router.patch(
